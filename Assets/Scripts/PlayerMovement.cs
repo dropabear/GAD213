@@ -7,93 +7,97 @@ using UnityEngine.Tilemaps;
 public class PlayerMovement : MonoBehaviour
 {
     #region Variables
-    public float dashForce;
-    public float jumpForce;
-    public float moveSpeed;
-    private Rigidbody2D rb;
-    private bool facingRight = true;
-    private float moveDirection;
-    private bool isJumping = false;
-    private bool isDashing = false;
-    public Transform groundCheck;
-    public LayerMask groundObjects;
-    private bool isGrounded;
-    public float checkRadius;
+    private float horizontal; // allows horizontal movement
+    private float moveSpeed = 10f; // movement speed
+    private float jumpForce = 8f; // amount of force behind each jump
     private int jumpCount;
-    public int maxJumpCount;
+    private int maxJumpCount = 1;
+    private bool isFacingRight = true; // checks if the player char is looking left or right
+    private bool canDash = true; // allows dash functionality
+    private bool isDashing; // checks if player is dashing
+    private float dashForce = 24f; // amount of force behind each dash
+    private float dashingTime = 0.2f; // amount of time player can spend dashing
+    private float dashingCooldown = 1f; // cooldown for dashing
+    #endregion
+    #region SerializeF
+    [SerializeField] private Rigidbody2D rb; // holds rigidbody
+    [SerializeField] private Transform groundCheck; // holds groundcheck for jumps
+    [SerializeField] private LayerMask groundLayer; // Lets you use Layers
+    [SerializeField] private TrailRenderer tr; // holds trail renderer 
     #endregion
 
     private void Start()
     {
-        jumpCount = maxJumpCount;
-    }
-    private void Awake()
-    {
-        rb = GetComponent<Rigidbody2D>();
+        jumpCount = maxJumpCount; // sets the amount of jumps the player can do
     }
 
-    void Update()
+    private void Update()
     {
-        PlayerInput();
+        if (isDashing)
+        {
+            return;
+        }
 
-        Animate();
+        horizontal = Input.GetAxisRaw("Horizontal"); // allows for horizontal movement using A and D
+
+        if (Input.GetButtonDown("Jump") && jumpCount > 0) // makes the player jump or double jump if they can
+        {
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            jumpCount--;
+        }
+
+        if (Input.GetKeyDown(KeyCode.E) && canDash) // makes the player dash
+        {
+            StartCoroutine(Dash());
+        }
+
+        if(IsGrounded()) // if the player has hit the ground, jump count resets so they can jump again
+        {
+            jumpCount = maxJumpCount;
+        }
+
+        Flip(); // calls flip function
     }
 
     private void FixedUpdate()
     {
-        isGrounded = Physics2D.OverlapCircle(groundCheck.position, checkRadius, groundObjects);
-        if (isGrounded )
+        if (isDashing)
         {
-            jumpCount = maxJumpCount;
+            return;
         }
-        Move();
-    }
-    private void Move()
-    {
-        rb.velocity = new Vector2(moveDirection * moveSpeed, rb.velocity.y);
-        if (isJumping == true)
-        {
-            rb.AddForce(new Vector2(0f, jumpForce));
-            Debug.Log("jump force applied");
-            jumpCount--;
-        }
-        isJumping = false;
 
-        if(isDashing == true)
+        rb.velocity = new Vector2(horizontal * moveSpeed, rb.velocity.y);
+    }
+
+    private bool IsGrounded()
+    {
+        return Physics2D.OverlapCircle(groundCheck.position, 0.1f, groundLayer); // checks to see if the ground is within range and can reset jumps
+    }
+
+    private void Flip()
+    {
+        if (isFacingRight && horizontal < 0f || !isFacingRight && horizontal > 0f) // allows for the player char to flip 
         {
-            rb.AddForce(new Vector2(dashForce, 0f));
+            Vector3 localScale = transform.localScale;
+            isFacingRight = !isFacingRight;
+            localScale.x *= -1f;
+            transform.localScale = localScale;
         }
+    }
+
+    private IEnumerator Dash() // turns off base gravity, allows for a horizontal dash, then resumes standard gravity. has 1 second cooldown
+    {
+        canDash = false;
+        isDashing = true;
+        float originalGravity = rb.gravityScale;
+        rb.gravityScale = 0f;
+        rb.velocity = new Vector2(transform.localScale.x * dashForce, 0f);
+        tr.emitting = true;
+        yield return new WaitForSeconds(dashingTime);
+        tr.emitting = false;
+        rb.gravityScale = originalGravity;
         isDashing = false;
-    }
-
-    private void PlayerInput()
-    {
-        moveDirection = Input.GetAxis("Horizontal");
-        if (Input.GetKeyDown(KeyCode.Space) && jumpCount > 0)
-        {
-            isJumping = true;
-        }
-        if (Input.GetKeyDown(KeyCode.LeftShift))
-        {
-            isDashing = true;
-        }
-    }
-
-    private void Animate()
-    {
-        if (moveDirection > 0 && !facingRight)
-        {
-            FlipPlayer();
-        }
-        else if (moveDirection < 0 && facingRight)
-        {
-            FlipPlayer();
-        }
-    }
-
-    private void FlipPlayer()
-    {
-        facingRight = !facingRight;
-        transform.Rotate(0f, 180f, 0f);
+        yield return new WaitForSeconds(dashingCooldown);
+        canDash = true;
     }
 }
