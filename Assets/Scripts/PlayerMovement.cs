@@ -46,7 +46,7 @@ public class PlayerMovement : MonoBehaviour
             jumpCount--;
         }
 
-        if (Input.GetKeyDown(KeyCode.E) && canDash) // makes the player dash
+        if (Input.GetKeyDown(KeyCode.LeftShift) && canDash) // makes the player dash
         {
             StartCoroutine(Dash());
         }
