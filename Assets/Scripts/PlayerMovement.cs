@@ -40,13 +40,13 @@ public class PlayerMovement : MonoBehaviour
 
         horizontal = Input.GetAxisRaw("Horizontal"); // allows for horizontal movement using A and D
 
-        if (Input.GetButtonDown("Jump") && jumpCount > 0) // makes the player jump or double jump if they can
+        if (Input.GetKeyDown(KeyCode.W) && jumpCount > 0) // makes the player jump or double jump if they can. Inspired by 'baedux' on YouTube
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
             jumpCount--;
         }
 
-        if (Input.GetKeyDown(KeyCode.LeftShift) && canDash) // makes the player dash
+        if (Input.GetKeyDown(KeyCode.S) && canDash) // makes the player dash
         {
             StartCoroutine(Dash());
         }
