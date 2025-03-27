@@ -82,6 +82,9 @@ public class PlayerMovement : MonoBehaviour
             isFacingRight = !isFacingRight;
             localScale.x *= -1f;
             transform.localScale = localScale;
+
+            // Notify the gun about the player's facing direction
+            FindObjectOfType<GunMovement>().SetPlayerFacingDirection(isFacingRight);
         }
     }
 
