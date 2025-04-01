@@ -7,7 +7,7 @@ using UnityEngine.Tilemaps;
 public class PlayerMovement : MonoBehaviour
 {
     #region Variables
-    private float horizontal; // allows horizontal movement
+    private float inputHorizontal; // allows horizontal movement
     private float moveSpeed = 10f; // movement speed
     private float jumpForce = 8f; // amount of force behind each jump
     private int jumpCount;
@@ -24,6 +24,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Transform groundCheck; // holds groundcheck for jumps
     [SerializeField] private LayerMask groundLayer; // Lets you use Layers
     [SerializeField] private TrailRenderer tr; // holds trail renderer 
+    [SerializeField] Animator playerAnim; // holds Animator
     #endregion
 
     private void Start()
@@ -31,14 +32,17 @@ public class PlayerMovement : MonoBehaviour
         jumpCount = maxJumpCount; // sets the amount of jumps the player can do
     }
 
-    private void Update()
+    public void Update()
     {
+
+        Animation();
+
         if (isDashing)
         {
             return;
         }
 
-        horizontal = Input.GetAxisRaw("Horizontal"); // allows for horizontal movement using A and D
+        inputHorizontal = Input.GetAxisRaw("Horizontal"); // allows for horizontal movement using A and D
 
         if (Input.GetKeyDown(KeyCode.W) && jumpCount > 0) // makes the player jump or double jump if they can. Inspired by 'baedux' on YouTube
         {
@@ -66,7 +70,7 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
 
-        rb.velocity = new Vector2(horizontal * moveSpeed, rb.velocity.y);
+        rb.velocity = new Vector2(inputHorizontal * moveSpeed, rb.velocity.y);
     }
 
     private bool IsGrounded()
@@ -76,7 +80,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Flip()
     {
-        if (isFacingRight && horizontal < 0f || !isFacingRight && horizontal > 0f) // allows for the player char to flip 
+        if (isFacingRight && inputHorizontal < 0f || !isFacingRight && inputHorizontal > 0f) // allows for the player char to flip 
         {
             Vector3 localScale = transform.localScale;
             isFacingRight = !isFacingRight;
@@ -102,5 +106,35 @@ public class PlayerMovement : MonoBehaviour
         isDashing = false;
         yield return new WaitForSeconds(dashingCooldown);
         canDash = true;
+    }
+
+    private void Animation()
+    {
+        if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.D))
+        {
+            playerAnim.SetBool("isWalking", true);
+        }
+        if (Input.GetKeyUp(KeyCode.A) || Input.GetKeyUp(KeyCode.D))
+        {
+            playerAnim.SetBool("isWalking", false);
+        }
+
+        if (isDashing == true)
+        {
+            playerAnim.SetBool("isDashingA", true);
+        }
+        else
+        {
+            playerAnim.SetBool("isDashingA", false);
+        }
+
+        if(IsGrounded() == false)
+        {
+            playerAnim.SetBool("isJumping", true);
+        }
+        else
+        {
+            playerAnim.SetBool("isJumping", false);
+        }
     }
 }
