@@ -6,20 +6,21 @@ public class BulletKillsEnemy : MonoBehaviour
 {
     public GameObject Enemy;
 
-    private void OnTriggerEnter(UnityEngine.Collider other)
-    {
-        // Check if the object entering the trigger is the player
-        if (other.gameObject.CompareTag("Enemy"))
+        private void OnTriggerEnter2D(Collider2D other)
         {
-            Debug.Log("Bullet hit Enemy");
+            if (other.gameObject.CompareTag("Enemy"))
+            {
+                Debug.Log("Bullet hit Enemy");
 
-            Enemy.gameObject.SetActive(false);
+                Enemy = other.gameObject; // Assign the object to Enemy
 
-            StartCoroutine (EnemyRespawn());
+                Enemy.gameObject.SetActive(false); // now you can disable it
+
+                StartCoroutine(EnemyRespawn());
+            }
         }
-    }
 
-    private IEnumerator EnemyRespawn()
+        private IEnumerator EnemyRespawn()
     {
         yield return new WaitForSeconds(2);
         Enemy.gameObject.SetActive(true);
