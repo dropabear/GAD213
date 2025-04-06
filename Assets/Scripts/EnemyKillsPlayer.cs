@@ -28,7 +28,7 @@ public class EnemyKillsPlayer : MonoBehaviour
         deathText.gameObject.SetActive(false);
     }
 
-    void GameOver()
+    public void GameOver()
     {
         // Pause the game
         Time.timeScale = 0;

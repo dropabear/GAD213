@@ -17,6 +17,7 @@ public class GunMovement : MonoBehaviour
     {
         mainCam = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
         playerTransform = transform.parent; // Assuming the gun is a child of the player object
+        isFacingRight = true;
     }
 
     void Update()
