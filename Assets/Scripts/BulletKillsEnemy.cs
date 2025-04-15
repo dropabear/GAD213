@@ -1,10 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-public class BulletKillsEnemy : MonoBehaviour
+public class BulletKillsEnemy : CombatManager
 {
     public GameObject Enemy;
+    public int deadEnemies = 0;
 
         private void OnTriggerEnter2D(Collider2D other)
         {
@@ -14,15 +16,24 @@ public class BulletKillsEnemy : MonoBehaviour
 
                 Enemy = other.gameObject; // Assign the object to Enemy
 
-                Enemy.gameObject.SetActive(false); // now you can disable it
+                deadEnemies++;
 
-                StartCoroutine(EnemyRespawn());
+                Destroy(Enemy);
             }
         }
 
-        private IEnumerator EnemyRespawn()
+    private void Update()
     {
-        yield return new WaitForSeconds(2);
-        Enemy.gameObject.SetActive(true);
+        if (deadEnemies == maxNumOfEnemies)
+        {
+            NextScene();
+        }
+    }
+
+    public void NextScene() //use this on the button
+    {
+        currentScene++; //add 1
+       
+        SceneManager.LoadScene(currentScene);
     }
 }
